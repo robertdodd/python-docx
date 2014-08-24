@@ -8,6 +8,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from .enum.text import WD_BREAK
 from .shared import Parented
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 
 def boolproperty(f):
@@ -79,6 +80,23 @@ class Paragraph(Parented):
         if style:
             run.style = style
         return run
+
+    def add_hyperlink(self, text=None, url=None):
+        """
+        Append a run to this paragraph containing *text* and having character
+        style identified by style ID *style*. *text* can contain tab
+        (``\\t``) characters, which are converted to the appropriate XML form
+        for a tab. *text* can also include newline (``\\n``) or carriage
+        return (``\\r``) characters, each of which is converted to a line
+        break.
+        """
+        h = self._p.add_hyperlink()
+        hyperlink = Hyperlink(h, self)
+        if text:
+            hyperlink.text = text
+        if url:
+            hyperlink.url = url
+        return hyperlink
 
     @property
     def alignment(self):
@@ -478,6 +496,47 @@ class Run(Parented):
         page view.
         """
         return 'webHidden'
+
+class Hyperlink(Parented):
+    """
+    Proxy object wrapping ``<w:hyperlink>`` element, which in turn contains a
+    ``<w:r>`` element. It has two main properties: The *url* it points to and
+    the *text* that is shown on the page.
+    """
+    def __init__(self, hyperlink, parent):
+        super(Hyperlink, self).__init__(parent)
+        self._hyperlink = hyperlink
+
+    @property
+    def url(self):
+        """
+        Read/write. The relationship ID the Hyperlink points to, or |None| if
+        it has no directly-applied relationship. Setting this property sets
+        the The ``r:id`` attribute of the ``<w:rPr>`` element inside the
+        hyperlink.
+        """
+        part = self.part
+        rId = self._hyperlink.relationship
+        url = part.target_ref(rId) if rId else ''
+        return url
+
+    @url.setter
+    def url(self, url):
+        part = self.part
+        rId = part.relate_to(url, RT.HYPERLINK, is_external=True)
+        self._hyperlink.relationship = rId
+
+    @property
+    def text(self):
+        """
+        Read/write. The String content of the hyperlink that is visible on the 
+        page.
+        """
+        return self._hyperlink.text
+
+    @text.setter
+    def text(self, text):
+        self._hyperlink.text = text
 
 
 class Text(object):

@@ -129,7 +129,7 @@ register_element_cls('w:tcW',       CT_TblWidth)
 register_element_cls('w:tr',        CT_Row)
 
 from docx.oxml.text import (
-    CT_Br, CT_Jc, CT_P, CT_PPr, CT_R, CT_RPr, CT_Text, CT_Underline
+    CT_Br, CT_Jc, CT_P, CT_PPr, CT_R, CT_RPr, CT_Text, CT_Underline, CT_Hyperlink
 )
 register_element_cls('w:b',          CT_OnOff)
 register_element_cls('w:bCs',        CT_OnOff)
@@ -149,6 +149,7 @@ register_element_cls('w:p',          CT_P)
 register_element_cls('w:pPr',        CT_PPr)
 register_element_cls('w:pStyle',     CT_String)
 register_element_cls('w:r',          CT_R)
+register_element_cls('w:hyperlink',  CT_Hyperlink)
 register_element_cls('w:rPr',        CT_RPr)
 register_element_cls('w:rStyle',     CT_String)
 register_element_cls('w:rtl',        CT_OnOff)

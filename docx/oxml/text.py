@@ -7,7 +7,7 @@ Custom element classes related to text, such as paragraph (CT_P) and runs
 
 from ..enum.text import WD_ALIGN_PARAGRAPH, WD_UNDERLINE
 from .ns import qn
-from .simpletypes import ST_BrClear, ST_BrType
+from .simpletypes import ST_BrClear, ST_BrType, ST_RelationshipId
 from .xmlchemy import (
     BaseOxmlElement, OptionalAttribute, OxmlElement, RequiredAttribute,
     ZeroOrMore, ZeroOrOne
@@ -35,6 +35,7 @@ class CT_P(BaseOxmlElement):
     """
     pPr = ZeroOrOne('w:pPr')
     r = ZeroOrMore('w:r')
+    hyperlink = ZeroOrMore('w:hyperlink')
 
     def _insert_pPr(self, pPr):
         self.insert(0, pPr)
@@ -265,6 +266,58 @@ class CT_R(BaseOxmlElement):
     def underline(self, value):
         rPr = self.get_or_add_rPr()
         rPr.underline = value
+
+
+class CT_Hyperlink(BaseOxmlElement):
+    """
+    ``<w:hyperlink>`` element, containing the properties and text for a hyperlink.
+
+    The ``<w:hyperlink>`` contains a ``<w:r>`` element which holds all the 
+    visible content. The ``<w:hyperlink>`` has an attribute ``r:id`` which 
+    holds an ID relating a URL in the document's relationships.
+    """
+    r = ZeroOrOne('w:r')
+    rid = RequiredAttribute('r:id', ST_RelationshipId)
+
+    @property
+    def relationship(self):
+        """
+        String contained in ``r:id`` attribute of <w:hyperlink>. It should
+        point to a URL in the document's relationships.
+        """
+        val = self.get(qn('r:id'))
+        return val
+
+    @relationship.setter
+    def relationship(self, rId):
+        self.set(qn('r:id'), rId)
+        self.set(qn('w:history'), '1')
+
+    @property
+    def text(self):
+        """
+        A string representing the textual content of this run. Returns the
+        textual content of this ``<w:hyperlink>``'s ``<w:r>`` element.
+        """
+        text = ''
+        if self.r is not None:
+            text = self.r.text
+        return text
+
+    @text.setter
+    def text(self, text):
+        """
+        Set's the text displayed by the hyperlink.
+
+        Clear the ``<w:r>`` element and add a new ``<w:t>`` element containing 
+        *text*. It also adds a 'Hyperlink' style to the``<w:r>`` element.
+        """
+        r = self.get_or_add_r()
+        r.clear_content()
+        t = r._add_t(text=text)
+        if len(text.strip()) < len(text):
+            t.set(qn('xml:space'), 'preserve')
+        r.style = 'Hyperlink'
 
 
 class CT_RPr(BaseOxmlElement):

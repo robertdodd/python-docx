@@ -113,6 +113,8 @@ rst_epilog = """
 
 .. |Run| replace:: :class:`Run`
 
+.. |Hyperlink| replace:: :class:`Hyperlink`
+
 .. |Section| replace:: :class:`.Section`
 
 .. |Sections| replace:: :class:`.Sections`
