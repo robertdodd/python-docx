@@ -25,6 +25,7 @@ Feature Analysis
    features/shapes-inline-size
    features/picture
    features/bool-run-props
+   features/hyperlink
 
 
 Schema Analysis
